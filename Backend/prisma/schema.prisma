@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id              Int          @id @default(autoincrement())
+  nome            String
+  email           String       @unique
+  senha           String
+  data_nascimento DateTime
+  status          Boolean      @default(true) // Novo campo adicionado
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  prescricoes     Prescricao[] // Relacionamento com Prescricao
+}
+
+model Prescricao {
+  id                  Int         @id @default(autoincrement())
+  id_usuario          Int
+  observacao          String?
+  id_remedio          Int
+  frequencia          String // Frequência de uso (ex: "Duas vezes ao dia")
+  horario_notificacao DateTime // Horário inicial de notificação
+  dt_inicio           DateTime
+  status              Boolean     @default(true)
+  usuario             Usuario     @relation(fields: [id_usuario], references: [id]) // Relacionamento com Usuario
+  remedio             Remedio     @relation(fields: [id_remedio], references: [id]) // Relacionamento com Remedio
+  historicos          Historico[] // Relacionamento com Historico
+}
+
+model Historico {
+  id            Int        @id @default(autoincrement())
+  id_prescricao Int
+  dt_atual      DateTime
+  status        Boolean    @default(true)
+  prescricao    Prescricao @relation(fields: [id_prescricao], references: [id]) // Relacionamento com Prescricao
+}
+
+model Remedio {
+  id          Int          @id @default(autoincrement())
+  nome        String
+  funcao      String
+  dosagem     Float
+  status      Boolean      @default(true)
+  prescricoes Prescricao[] // Relacionamento com Prescricao
+}
